@@ -162,15 +162,35 @@ if uploaded_file is not None:
         st.header("2. Previsão de Crimes por Ano")
         municipio_selecionado = st.selectbox("Município para Previsão:", sorted(df['Municipal'].unique()))
         df_municipio = df[df['Municipal'] == municipio_selecionado]
-        X = df_municipio[['Ano']]
-        y = df_municipio['Crimes against persons']
-        model = LinearRegression()
-        model.fit(X, y)
-        anos_futuros = pd.DataFrame({'Ano': [2020, 2021, 2022]})
-        predicoes = model.predict(anos_futuros)
-        st.write("Previsão para os Próximos Anos:")
-        for ano, pred in zip(anos_futuros['Ano'], predicoes):
-            st.write(f"Ano {ano}: **{int(pred)} crimes previstos**")
 
-else:
-    st.warning("Por favor, faça o upload de um arquivo para começar.")
+        # Checkboxes para selecionar os tipos de crimes
+        st.subheader("Selecione os Tipos de Crimes:")
+        crime_options = crime_types_columns[3:]
+        selected_crimes = [crime for crime in crime_options if st.checkbox(crime, True)]
+
+        if not selected_crimes:
+            st.warning("Selecione pelo menos um tipo de crime!")
+        else:
+            df_municipio['Total Crimes Selecionados'] = df_municipio[selected_crimes].sum(axis=1)
+            X = df_municipio[['Ano']]
+            y = df_municipio['Total Crimes Selecionados']
+            model = LinearRegression()
+            model.fit(X, y)
+
+            # Previsões para os anos futuros
+            anos_futuros = pd.DataFrame({'Ano': [2020, 2021, 2022]})
+            predicoes = model.predict(anos_futuros)
+
+            st.subheader("Previsão de Crimes para os Próximos Anos:")
+            for ano, pred in zip(anos_futuros['Ano'], predicoes):
+                st.write(f"Ano {ano}: **{int(pred)} crimes previstos**")
+
+            fig5, ax5 = plt.subplots(figsize=(10, 6))
+            sns.scatterplot(x='Ano', y='Total Crimes Selecionados', data=df_municipio, color='blue',
+                            label='Pontos Reais', ax=ax5)
+            ax5.plot(anos_futuros['Ano'], predicoes, color='red', label='Linha de Previsão')
+            ax5.set_title(f"Previsão de Crimes Selecionados no Município {municipio_selecionado}")
+            ax5.set_xlabel("Ano")
+            ax5.set_ylabel("Total de Crimes")
+            ax5.legend()
+            st.pyplot(fig5)
