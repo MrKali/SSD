@@ -23,7 +23,7 @@ def load_data(file_path):
     return data
 
 # Caminho do arquivo
-file_path = "C:/Users/pedro/OneDrive/Documents/ssd/dados_transformados_v4.xlsx"
+file_path = "dados_transformados_v4.xlsx"
 data = load_data(file_path)
 
 # ==============================================
